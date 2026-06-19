@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Lost & Sound</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f4f9; text-align: center; padding: 50px; }
+        .search-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input[type="text"] { width: 70%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 20px; background-color: #1DB954; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .result-area { margin-top: 30px; display: none; background: #fff; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
+        .album-cover { width: 200px; height: 200px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        audio { margin-top: 15px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="search-container">
+        <h1>🎧 Lost & Sound</h1>
+        <p>기억나는 단어나 제목으로 음악을 찾아보세요!</p>
+        
+        <input type="text" id="searchInput" placeholder="노래 제목이나 가수를 입력하세요...">
+        <br>
+        <button onclick="searchMusic()">가사/제목으로 검색</button>
+        <button onclick="uploadImage()">📷 앨범 커버로 검색</button>
+        
+        <div class="result-area" id="resultArea">
+            <img id="albumCoverImg" class="album-cover" src="" alt="앨범 커버">
+            <h3 id="songName">곡명</h3>
+            <p id="artistName" style="color: #666;">아티스트</p>
+            <audio id="audioPreview" controls>
+                <source src="" type="audio/mpeg">
+                브라우저가 오디오를 지원하지 않습니다.
+            </audio>
+        </div>
+    </div>
+
+    <script>
+        async function searchMusic() {
+            var input = document.getElementById('searchInput').value;
+            
+            // 1. 빈 칸 검증 로직
+            if(input.trim() === "") {
+                alert("검색어를 입력해주세요!");
+                return;
+            }
+
+            // 2. 실제 Apple iTunes API 호출
+            var url = `https://itunes.apple.com/search?term=${encodeURIComponent(input)}&entity=song&limit=1`;
+            
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                
+                // 3. 검색 결과가 있을 경우 화면에 출력
+                if(data.results.length > 0) {
+                    let song = data.results[0];
+                    document.getElementById('resultArea').style.display = 'block';
+                    
+                    // 고화질 앨범 커버로 변환하여 출력
+                    document.getElementById('albumCoverImg').src = song.artworkUrl100.replace('100x100', '300x300');
+                    document.getElementById('songName').innerText = song.trackName;
+                    document.getElementById('artistName').innerText = song.artistName;
+                    
+                    // 30초 미리듣기 연결
+                    document.getElementById('audioPreview').src = song.previewUrl;
+                    document.getElementById('audioPreview').load();
+                } else {
+                    alert("검색 결과가 없습니다. 다른 단어로 검색해 보세요.");
+                    document.getElementById('resultArea').style.display = 'none';
+                }
+            } catch (error) {
+                alert("데이터를 가져오는 중 오류가 발생했습니다.");
+            }
+        }
+
+        function uploadImage() {
+            alert("이미지 검색 기능은 아직 준비 중입니다!");
+        }
+    </script>
+
+</body>
+</html>
